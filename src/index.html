@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A local companion for composing and previewing an ADB automation plan for Lords Mobile. Unofficial fan project.">
+  <meta name="theme-color" content="#070b14">
+  <title>Lords Mobile Bot Studio</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1120'/%3E%3Cpath d='M32 10 51 18v14c0 12-8 19-19 23-11-4-19-11-19-23V18z' fill='none' stroke='%23e6b45e' stroke-width='4'/%3E%3Cpath d='M22 34l6-7 4 6 4-9 6 10' fill='none' stroke='%2363e6be' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="backdrop" aria-hidden="true">
+    <div class="aurora aurora-one"></div>
+    <div class="aurora aurora-two"></div>
+    <div class="aurora aurora-three"></div>
+    <div class="grid-lines"></div>
+  </div>
+  <canvas id="embers" aria-hidden="true"></canvas>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 64 64" fill="none">
+          <path d="M32 7 55 16v16c0 13-9 21-23 26C18 53 9 45 9 32V16z" stroke="currentColor" stroke-width="2.4"/>
+          <path d="M20 37l7-9 5 7 5-11 7 13" stroke="#63e6be" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="32" cy="23" r="3.2" fill="currentColor"/>
+        </svg>
+      </span>
+      <div class="brand-copy">
+        <span class="brand-kicker">Unofficial automation companion</span>
+        <h1>Lords Mobile <span>Bot Studio</span></h1>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span class="status-pill"><span class="pulse"></span> Plan ready</span>
+      <a class="btn ghost compact" href="#blueprint">Setup guide</a>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="hero" aria-labelledby="heroTitle">
+      <div class="hero-copy">
+        <p class="eyebrow"><span></span> Local planning deck</p>
+        <h2 id="heroTitle">Put your empire's busywork on <em>autopilot.</em></h2>
+        <p class="lede">Compose a transparent ADB loop for gathering, training, and daily upkeep. Tune every module, inspect the generated plan, and preview the run before a single tap leaves your device.</p>
+        <div class="hero-actions">
+          <button class="btn primary" id="simulateBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6.5v11l9-5.5z" fill="currentColor"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/></svg>
+            <span>Run simulation</span>
+          </button>
+          <button class="btn ghost" id="downloadBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Download plan
+          </button>
+        </div>
+        <ul class="hero-notes">
+          <li><span class="tick">✓</span> Screen-match guards</li>
+          <li><span class="tick">✓</span> Randomized pacing</li>
+          <li><span class="tick">✓</span> No credential storage</li>
+        </ul>
+      </div>
+
+      <div class="hero-stats">
+        <article class="stat-card featured">
+          <span class="stat-label">Active modules</span>
+          <strong id="statModules">5<small>/6</small></strong>
+          <span class="stat-foot">loadout configured</span>
+          <span class="stat-glow" aria-hidden="true"></span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Loop interval</span>
+          <strong id="statInterval">90<small>s</small></strong>
+          <span class="stat-foot">±15s human jitter</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Daily actions</span>
+          <strong id="statActions">~1.3k</strong>
+          <span class="stat-foot">estimated taps</span>
+        </article>
+        <div class="signal-card" aria-hidden="true">
+          <div class="signal-head"><span>Automation bus</span><span>LIVE</span></div>
+          <div class="signal-bars"><i style="--h:34%"></i><i style="--h:62%"></i><i style="--h:48%"></i><i style="--h:88%"></i><i style="--h:57%"></i><i style="--h:73%"></i><i style="--h:41%"></i><i style="--h:80%"></i><i style="--h:52%"></i><i style="--h:92%"></i><i style="--h:64%"></i><i style="--h:45%"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="workspace">
+      <section class="panel modules-panel" aria-labelledby="modulesTitle">
+        <header class="panel-head">
+          <div>
+            <p class="panel-kicker">01 · Loadout</p>
+            <h2 id="modulesTitle">Automation modules</h2>
+          </div>
+          <span class="chip"><span class="chip-dot"></span><span id="moduleSummary">5 enabled</span></span>
+        </header>
+
+        <div class="module-grid">
+          <article class="module-card" data-module="gather">
+            <div class="module-top">
+              <span class="module-icon gold">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 19l7-7m-3-6 3-3 7 7-3 3-7-7z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 5 5 9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              </span>
+              <label class="switch" aria-label="Toggle Auto Gather">
+                <input type="checkbox" data-toggle="gather" checked>
+                <span class="switch-track"><span class="switch-thumb"></span></span>
+              </label>
+            </div>
+            <h3>Auto Gather</h3>
+            <p>Route idle marches to the richest tile and recall them before the shield drops.</p>
+            <div class="module-config">
+              <label>Resource
+                <select data-field="gather.resource">
+                  <option value="food">Food</option>
+                  <option value="wood">Wood</option>
+                  <option value="ore">Ore</option>
+                  <option value="stone">Stone</option>
+                </select>
+              </label>
+              <label>Marches
+                <input type="range" min="1" max="5" value="3" data-field="gather.marches">
+              </label>
+            </div>
+            <div class="module-foot"><span class="tag">Economy</span><span class="tag" data-summary="gather">Food · 3 marches</span></div>
+          </article>
+
+          <article class="module-card" data-module="train">
+            <div class="module-top">
+              <span class="module-icon mint">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 19h16M6 19v-5l6-8 6 8v5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 19v-4h4v4" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+              </span>
+              <label class="switch" aria-label="Toggle Troop Training">
+                <input type="checkbox" data-toggle="train" checked>
+                <span class="switch-track"><span class="switch-thumb"></span></span>
+              </label>
+            </div>
+            <h3>Troop Training</h3>
+            <p>Keep barracks and stables busy with a balanced batch that fits your queue.</p>
+            <div class="module-config">
+              <label>Tier
+                <select data-field="train.tier">
+                  <option value="T1">T1</option>
+                  <option value="T2">T2</option>
+                  <option value="T3" selected>T3</option>
+                  <option value="T4">T4</option>
+                </select>
+              </label>
+              <label>Batch
+                <input type="number" min="50" max="2000" step="50" value="250" data-field="train.batch">
+              </label>
+            </div>
+            <div class="module-foot"><span class="tag">Military</span><span class="tag" data-summary="train">T3 · 250 troops</span></div>
+          </article>
+
+          <article class="module-card" data-module="hero">
+            <div class="module-top">
+              <span class="module-icon violet">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.2l5.9-.9z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+              </span>
+              <label class="switch" aria-label="Toggle Hero Stages">
+                <input type="checkbox" data-toggle="hero" checked>
+                <span class="switch-track"><span class="switch-thumb"></span></span>
+              </label>
+            </div>
+            <h3>Hero Stages</h3>
+            <p>Sweep cleared stages for hero shards, then stop when stamina hits the floor.</p>
+            <div class="module-config">
+              <label>Sweeps
+                <input type="number" min="1" max="20" value="8" data-field="hero.sweeps">
+              </label>
+              <label>Reserve
+                <select data-field="hero.reserve">
+                  <option value="20">20 stamina</option>
+                  <option value="40" selected>40 stamina</option>
+                  <option value="60">60 stamina</option>
+                </select>
+              </label>
+            </div>
+            <div class="module-foot"><span class="tag">Growth</span><span class="tag" data-summary="hero">8 sweeps · 40 reserve</span></div>
+          </article>
+
+          <article class="module-card" data-module="help">
+            <div class="module-top">
+              <span class="module-icon amber">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-7-4.4-7-9.5A4.5 4.5 0 0 1 12 8a4.5 4.5 0 0 1 7 3.5C19 16.6 12 21 12 21z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+              </span>
+              <label class="switch" aria-label="Toggle Guild Help">
+                <input type="checkbox" data-toggle="help" checked>
+                <span class="switch-track"><span class="switch-thumb"></span></span>
+              </label>
+            </div>
+            <h3>Guild Help</h3>
+            <p>Tap every open guild request on a calm cadence so allies keep their timers short.</p>
+            <div class="module-config">
+              <label>Cadence
+                <select data-field="help.interval">
+                  <option value="5">5 min</option>
+                  <option value="10" selected>10 min</option>
+                  <option value="15">15 min</option>
+                </select>
+              </label>
+              <label>Batch
+                <input type="number" min="1" max="30" value="12" data-field="help.batch">
+              </label>
+            </div>
+            <div class="module-foot"><span class="tag">Social</span><span class="tag" data-summary="help">Every 10 min · 12 taps</span></div>
+          </article>
+
+          <article class="module-card" data-module="shield">
+            <div class="module-top">
+              <span class="module-icon rose">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 20 6v6c0 5-3.4 8-8 9-4.6-1-8-4-8-9V6z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 8v4m0 3h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              </span>
+              <label class="switch" aria-label="Toggle Shield Watch">
+                <input type="checkbox" data-toggle="shield">
+                <span class="switch-track"><span class="switch-thumb"></span></span>
+              </label>
+            </div>
+            <h3>Shield Watch</h3>
+            <p>Read the shield timer and raise an alert before the empire becomes exposed.</p>
+            <div class="module-config">
+              <label>Alert at
+                <select data-field="shield.threshold">
+                  <option value="15">15 min</option>
+                  <option value="30" selected>30 min</option>
+                  <option value="60">60 min</option>
+                </select>
+              </label>
+              <label>Action
+                <select data-field="shield.action">
+                  <option value="notify" selected>Notify only</option>
+                  <option value="renew">Renew shield</option>
+                </select>
+              </label>
+            </div>
+            <div class="module-foot"><span class="tag">Safety</span><span class="tag" data-summary="shield">Notify at 30 min</span></div>
+          </article>
+
+          <article class="module-card" data-module="quests">
+            <div class="module-top">
+              <span class="module-icon teal">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4h12v16l-6-3-6 3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 8h6M9 11h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              </span>
+              <label class="switch" aria-label="Toggle Daily Quests">
+                <input type="checkbox" data-toggle="quests" checked>
+                <span class="switch-track"><span class="switch-thumb"></span></span>
+              </label>
+            </div>
+            <h3>Daily Quests</h3>
+            <p>Collect completed objectives and clear the reward track before the reset.</p>
+            <div class="module-config">
+              <label>Scope
+                <select data-field="quests.scope">
+                  <option value="all" selected>All rewards</option>
+                  <option value="chest">Chest only</option>
+                </select>
+              </label>
+              <label>Reset
+                <select data-field="quests.reset">
+                  <option value="local" selected>Local midnight</option>
+                  <option value="game">In-game reset</option>
+                </select>
+              </label>
+            </div>
+            <div class="module-foot"><span class="tag">Routine</span><span class="tag" data-summary="quests">All rewards · local reset</span></div>
+          </article>
+        </div>
+      </section>
+
+      <aside class="panel plan-panel" aria-labelledby="planTitle">
+        <header class="panel-head">
+          <div>
+            <p class="panel-kicker">02 · Output</p>
+            <h2 id="planTitle">Generated plan</h2>
+          </div>
+          <span class="pill">JSON</span>
+        </header>
+
+        <div class="device-fields">
+          <label>Target device
+            <select id="deviceSelect">
+              <option value="Android emulator">Android emulator</option>
+              <option value="Physical device">Physical device</option>
+              <option value="Cloud phone">Cloud phone</option>
+            </select>
+          </label>
+          <label>ADB serial
+            <input id="serialInput" type="text" value="emulator-5554" spellcheck="false" autocomplete="off">
+          </label>
+          <label>Loop interval
+            <input id="intervalInput" type="number" min="15" max="600" step="5" value="90">
+          </label>
+        </div>
+
+        <div class="code-wrap">
+          <div class="code-bar">
+            <span>lords-plan.json</span>
+            <button id="copyBtn" class="mini-btn" type="button">Copy</button>
+          </div>
+          <pre id="planJson" class="code" aria-live="polite"></pre>
+        </div>
+        <p class="plan-note"><span class="lock"></span> Local blueprint only — no game connection, no credential storage, no anti-cheat bypass.</p>
+      </aside>
+    </div>
+
+    <section class="panel sim-panel" aria-labelledby="simTitle">
+      <header class="panel-head">
+        <div>
+          <p class="panel-kicker">03 · Preview</p>
+          <h2 id="simTitle">Loop simulator</h2>
+        </div>
+        <span class="run-state" id="runState" data-state="idle"><span></span>Idle</span>
+      </header>
+
+      <div class="sim-body">
+        <div class="sim-main">
+          <div class="progress" role="progressbar" aria-label="Simulation progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <span id="progressBar"></span>
+          </div>
+          <div class="progress-meta"><span id="progressLabel">Waiting to run</span><span id="progressPercent">0%</span></div>
+          <ol class="log" id="simLog" aria-live="polite">
+            <li class="log-empty">Press <strong>Run simulation</strong> to preview how the enabled modules execute.</li>
+          </ol>
+        </div>
+        <div class="sim-side">
+          <article class="resource"><span>Food</span><strong id="resFood">2.41M</strong><small id="deltaFood">stock</small></article>
+          <article class="resource"><span>Wood</span><strong id="resWood">1.87M</strong><small id="deltaWood">stock</small></article>
+          <article class="resource"><span>Ore</span><strong id="resOre">940K</strong><small id="deltaOre">stock</small></article>
+          <article class="resource"><span>Might</span><strong id="resMight">3.12M</strong><small id="deltaMight">stock</small></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel blueprint" id="blueprint" aria-labelledby="blueprintTitle">
+      <header class="panel-head">
+        <div>
+          <p class="panel-kicker">04 · Blueprint</p>
+          <h2 id="blueprintTitle">Turn the plan into a real runner</h2>
+        </div>
+        <span class="pill soft">ADB + Computer vision</span>
+      </header>
+
+      <div class="steps">
+        <article class="step">
+          <span class="step-num">01</span>
+          <h3>Arm a test device</h3>
+          <p>Use an emulator or a spare phone with USB debugging enabled. Keep the game in a fixed resolution and language.</p>
+          <code>adb devices</code>
+        </article>
+        <article class="step">
+          <span class="step-num">02</span>
+          <h3>Capture screen states</h3>
+          <p>Store reference crops for the city, world map, queues, and popups. Match with a confidence threshold before every tap.</p>
+          <code>adb exec-out screencap -p</code>
+        </article>
+        <article class="step">
+          <span class="step-num">03</span>
+          <h3>Drive the loop</h3>
+          <p>Feed this JSON to an ADB / uiautomator runner. Add jitter, retries, and a hard stop whenever the screen is unknown.</p>
+          <code>uiautomator dump</code>
+        </article>
+        <article class="step">
+          <span class="step-num">04</span>
+          <h3>Observe and pause</h3>
+          <p>Stream screenshots to a local dashboard, log every action, and keep a physical kill switch within reach.</p>
+          <code>adb shell input tap X Y</code>
+        </article>
+      </div>
+
+      <div class="warning">
+        <span class="warning-icon">!</span>
+        <div>
+          <strong>Play fair, stay aware.</strong>
+          <p>Automation is against the Lords Mobile Terms of Service and can get an account restricted or banned. This fan-made companion only generates a local plan and simulator preview; it does not connect to the game, read memory, or evade detection. Test on an account you can afford to lose.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-brand">
+      <span class="brand-mark small" aria-hidden="true">
+        <svg viewBox="0 0 64 64" fill="none"><path d="M32 7 55 16v16c0 13-9 21-23 26C18 53 9 45 9 32V16z" stroke="currentColor" stroke-width="2.4"/><path d="M20 37l7-9 5 7 5-11 7 13" stroke="#63e6be" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span>Lords Mobile Bot Studio · local prototype</span>
+    </div>
+    <span>Plan generation and simulation run entirely in your browser.</span>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>

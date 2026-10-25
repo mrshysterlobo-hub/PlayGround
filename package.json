@@ -1,0 +1,15 @@
+{
+  "name": "lords-mobile-bot-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A local planning companion that composes an ADB automation plan for Lords Mobile.",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "node serve.mjs",
+    "capture": "node capture.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
