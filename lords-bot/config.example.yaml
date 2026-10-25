@@ -1,0 +1,42 @@
+device:
+  serial: null
+  adb_path: adb
+
+engine:
+  poll_interval: 1.0
+  max_runtime: 0
+  start_delay: 0
+  dry_run: false
+  template_dir: templates
+  screenshot_dir: screenshots
+  match_threshold: 0.88
+  scales: [1.0]
+  max_consecutive_failures: 5
+
+guards: []
+
+tasks:
+  demo_tap:
+    template: world_map
+    cooldown: 5.0
+  gather:
+    resources: [food, wood]
+    max_marches: 3
+    cooldown: 300
+  monster_hunt:
+    level: 1
+    max_hunts: 3
+    cooldown: 300
+    energy_cooldown: 900
+  train_troops:
+    plus_taps: 0
+    cooldown: 300
+  guild_help:
+    cooldown: 600
+    empty_grace: 2.0
+  shield_check:
+    interval: 1800
+    retry: 300
+  rotation:
+    order: [guild_help, shield_check, gather, monster_hunt, train_troops]
+    between: 2.0
